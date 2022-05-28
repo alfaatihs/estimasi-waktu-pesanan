@@ -12,3 +12,4 @@ if pilihan == "buat pesanan baru":
     print("Menampilkan menu")
 elif pilihan == "cek pesanan":
     print("menampilkan menu cek pesanan")
+    print()
