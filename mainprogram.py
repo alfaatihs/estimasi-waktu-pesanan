@@ -1,5 +1,7 @@
 import csv
 from tabulate import tabulate
+import datetime
+import time
 
 def displayrupiah(value):
     str_value = str(value)
@@ -31,7 +33,61 @@ def menuawal(): #display awal (jihan)
     2. cek pesanan
     3. exit
     ==================================================""")
+ 
+def inputdatadiri():
+    print("""
+    ==========================================
+                Masukkan Data Diri
+    """)
+    nama = input("Nama = ")
+    notelp = input("No Telp = ")
+    print("""
+    ==========================================
+                Pilih Kecamatan
+    ==========================================
+    1. Laweyan
+    2. Serengan
+    3. Jebres
+    4. Banjarsari
+    5. Pasar Kliwon
+    """)
     
+    kecamatan = int(input(">> "))
+    if kecamatan == 1:
+        ongkir = 6000
+    elif kecamatan ==2:
+        ongkir = 10000
+    elif kecamatan == 3:
+        ongkir = 8000
+    elif kecamatan == 4:
+        ongkir = 9000
+    elif kecamatan == 5:
+        ongkir = 7000
+    else:
+        print("Input tidak valid, silahkan coba lagi")
+        inputdatadiri()
+    
+    print("Masukkan alamat lengkap =")
+    alamat = input(">> ")
+
+
+def konfirmasi():
+    print("""
+    ==========================================
+          Apakah Pesanan Sudah Sesuai?
+    ==========================================
+    1. Ya
+    2. Tidak              
+    ================TERIMAKASIH===============
+    """)
+    jawaban = int(input("Apakah Pesanan Sudah Sesuai? "))
+    if jawaban == 1 :
+        inputdatadiri()
+    elif jawaban == 2 :
+        print("Pesanan anda telah direset")
+        menupesan()
+    else :
+        konfirmasi()
 
 def menupesan(): #faatih, jihan (odi buat csv)
     
@@ -70,8 +126,10 @@ def menupesan(): #faatih, jihan (odi buat csv)
         pilihan = int(input(">> "))
         if pilihan == 0:
             print(tabulate(listpesanan,headers=["Pesanan","Jumlah","Harga"],tablefmt="pretty"))
-            for i in range(listpilihan):
-                totalharga =+ listpilihan[i][2]
+
+            totalharga = 0
+            for i in range(len(listpesanan)):
+                totalharga = totalharga + listpesanan[i][2]
 
             print("Total harga = ", totalharga)
             loopv1 = 12
@@ -89,6 +147,10 @@ def menupesan(): #faatih, jihan (odi buat csv)
             listpesanan.append(listpilihan)
         else:
             print("Input tidak valid. Silahkan coba lagi")
+    konfirmasi()
+    
+
+
 
 
 def menucek(): #apang, odi
@@ -97,7 +159,20 @@ def menucek(): #apang, odi
                 Cek Pesanan Anda
     ==========================================
     """) 
-    pesanan = int(input("Masukkan Nomor Pesanan=")) 
+    print("Masukkan Nomor Pesanan")
+    nopesanan = int(input(">> "))
+    
+    '''
+    print("""
+    ==========================================
+        Estimasi Waktu Pesanan Anda 
+    ==========================================
+    """)
+    
+
+    '''
+            
+    
 
 def menuexit(): #konfirmasi exit (apang)
     print("""
@@ -127,4 +202,6 @@ def main(): #alur program (faatih)
         menuexit()
     else :
         menuawal()
+
+main()
 
