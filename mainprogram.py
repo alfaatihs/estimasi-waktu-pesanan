@@ -221,4 +221,3 @@ def main(): #alur program (faatih)
         menuawal()
 
 main()
-
