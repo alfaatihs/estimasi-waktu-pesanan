@@ -47,3 +47,40 @@ def strfdelta(tdelta, fmt='{D:02}d {H:02}h {M:02}m {S:02}s', inputtype='timedelt
         if field in desired_fields and field in constants:
             values[field], remainder = divmod(remainder, constants[field])
     return f.format(fmt, **values)
+
+def nestedlistindex(mylist, char):
+    for sub_list in mylist:
+        if char in sub_list:
+            return (mylist.index(sub_list), sub_list.index(char))
+    raise ValueError("'{char}' is not in list".format(char = char))
+
+def sumcolumn(list,column):
+    total = 0
+    for row in range(len(list)):
+        total = total + list[row][column-1]
+    return total
+
+def listconversion(list,column,func):
+    for i in range (len(list)):
+        list[i][column] = func(list[i][column])
+    
+    return list
+
+def displayrupiah(value):
+    str_value = str(value)
+    separate_decimal = str_value.split(".")
+    after_decimal = separate_decimal[0]
+    before_decimal = separate_decimal[1]
+
+    reverse = after_decimal[::-1]
+    temp_reverse_value = ""
+
+    for index, val in enumerate(reverse):
+        if (index + 1) % 3 == 0 and index + 1 != len(reverse):
+            temp_reverse_value = temp_reverse_value + val + "."
+        else:
+            temp_reverse_value = temp_reverse_value + val
+
+    temp_result = temp_reverse_value[::-1]
+
+    return "Rp " + temp_result
