@@ -1,7 +1,18 @@
+
 import csv
 from tabulate import tabulate
 import datetime as dt
-import time
+import locale as lc
+import modul
+
+lc.setlocale(lc.LC_TIME, 'IND')
+no = 0
+
+def nestedlistindex(mylist, char):
+    for sub_list in mylist:
+        if char in sub_list:
+            return (mylist.index(sub_list), sub_list.index(char))
+    raise ValueError("'{char}' is not in list".format(char = char))
 
 def sumcolumn(list,column):
     total = 0
@@ -36,31 +47,46 @@ def displayrupiah(value):
 
 def menucek(): #apang, odi
     print("""
-    ==========================================
-                Cek Pesanan Anda
-    ==========================================
+==========================================
+            Cek Pesanan Anda
+==========================================
     """) 
     print("Masukkan Nomor Pesanan")
-    nopesanan = int(input(">> "))
-    
-    '''
-    print("""
-    ==========================================
-        Estimasi Waktu Pesanan Anda 
-    ==========================================
-    """)
-    
+    nopesanan = input(">> ")
+    with open ('data.csv','r') as filedata :
+        readdata = csv.reader(filedata)
+        listdata = list(readdata)
 
+    index = nestedlistindex(listdata,nopesanan)
+    print("Detail Pesanan:")
+    print()
+    print("No Pesanan: ", listdata[index[0]][0])
+    jamsampai = listdata[index[0]][6]
+    jamsampai = dt.datetime.strptime(jamsampai,'%Y-%m-%d %H:%M:%S.%f')
+    waktusampai = jamsampai - dt.datetime.now()
+    display = modul.strfdelta(waktusampai, '{H:2} Jam, {M:02} M2enit')
+    print("Pesanan anda akan tiba dalam", display)
+
+    main()
+
+    
+    
+    print("""
+==========================================
+       Estimasi Waktu Pesanan Anda 
+==========================================
+    """)
     '''
-            
+menucek()    
+'''        
 def menuexit(): #konfirmasi exit (apang)
     print("""
-    ==========================================
-                Yakin untuk Keluar?
-    ==========================================
-    1. Tidak
-    2. Keluar                
-    ================TERIMAKASIH===============
+==========================================
+            Yakin untuk Keluar?
+==========================================
+1. Tidak
+2. Keluar                
+================TERIMAKASIH===============
     """)
     pilihan = int(input("Yakin untuk Keluar?"))
     if pilihan == 1 :
@@ -71,10 +97,11 @@ def menuexit(): #konfirmasi exit (apang)
         menuexit()
 
 def generatenopesan():
-    date = dt.date.now()
+    global no
+    date = dt.date.today()
     date = date.strftime("%Y%m%d")
     no = no + 1
-    nopesan = date + str(no)
+    nopesan = date + str(no).zfill(3)
     return nopesan
     
 def kecamatan():
@@ -83,14 +110,14 @@ def kecamatan():
 
     try:
         print("""
-        ==========================================
-                    Pilih Kecamatan
-        ==========================================
-        1. Laweyan
-        2. Serengan
-        3. Jebres
-        4. Banjarsari
-        5. Pasar Kliwon
+==========================================
+            Pilih Kecamatan
+==========================================
+1. Laweyan
+2. Serengan
+3. Jebres
+4. Banjarsari
+5. Pasar Kliwon
         """)
             
         kecamatan = int(input(">> "))
@@ -112,6 +139,7 @@ def kecamatan():
         else:
             print("Input tidak valid, silahkan coba lagi")
             kecamatan()
+
     except ValueError:
         print("Input tidak valid, silahkan coba lagi")
         kecamatan()
@@ -128,13 +156,44 @@ def timeygmana():
     
     except ValueError:
         return timepesan
+    
+    except TypeError:
+        return timepesan
 
-#def receipt(): LANJUT KE SINI
+    except IndexError :
+        return timepesan
+
+def receipt():
+    print()
+    print("Pesanan Anda Telah dibuat")
+    print()
+    print("Detail Pesanan:")
+    print()
+    print("No Pesanan: ", datapesan[0])
+    print("Tanggal Pesan: ",timepesan.strftime("%A, %d %B %Y"))
+    print("Jam Pesan: ", timepesan.strftime("%X"))
+    print()
+    print("Nama: ",datapesan[1])
+    print("No. Telp: ",datapesan[2])
+    print("Alamat: ",datapesan[3])
+    print()
+    print(tabulate(listpesanan,headers=["Pesanan","Jumlah","Harga"]))
+    print()
+    print("Total harga = ", displayrupiah(float(totalharga)))
+    print("Ongkir = ", displayrupiah(float(ongkir)))
+    print("Jumlah yang Harus dibayar: ", displayrupiah(float(totalharga + ongkir)))
+    print()
+    print("Tekan ENTER untuk kembali ke menu awal")
+    inputvar = input(">> ")
+    if inputvar == "":
+        main()
 
 def writedatapesan():
-    with open ('data.csv','w') as filedata:
+    with open ('data.csv','a',newline='') as filedata:
         writedata = csv.writer(filedata)
         writedata.writerow(datapesan)
+        filedata.close()
+    receipt()
 
 def waktu():
     global timepesan
@@ -152,36 +211,38 @@ def inputdatadiri():
     global datapesan
 
     print("""
-    ==========================================
-                Masukkan Data Diri
+==========================================
+            Masukkan Data Diri
     """)
     nama = input("Nama = ")
     notelp = input("No Telp = ")
     kecamatan()
     print("Masukkan alamat lengkap =")
     alamat = input(">> ")
-    nopesan = generatenopesan()
 
+    nopesan = generatenopesan()
     datapesan = []
     datapesan.append(nopesan)
     datapesan.append(nama)
     datapesan.append(notelp)
     datapesan.append(alamat)
+    #quit()
+    #print(datapesan)
     waktu()
 
 def konfirmasi():
     try:    
         print(tabulate(listpesanan,headers=["Pesanan","Jumlah","Harga"],tablefmt="pretty"))
     
-        print("Total harga = ", displayrupiah(totalharga))
+        print("Total harga = ", displayrupiah(float(totalharga)))
     
         print("""
-        ==========================================
-              Apakah Pesanan Sudah Sesuai?
-        ==========================================
-        1. Ya
-        2. Tidak              
-        ================TERIMAKASIH===============
+==========================================
+        Apakah Pesanan Sudah Sesuai?
+==========================================
+1. Ya
+2. Tidak              
+================TERIMAKASIH===============
         """)
         jawaban = int(input(">> "))
         if jawaban == 1 :
@@ -199,8 +260,7 @@ def konfirmasi():
 
 def hitungkonfirmasi():
     global totalharga
-    totalharga = sumcolumn(listpesanan,3)    
-    totalharga = float(totalharga)
+    totalharga = sumcolumn(listpesanan,3)
 
     listconversion(listpesanan,2,float)
     listconversion(listpesanan,2,displayrupiah)
@@ -264,20 +324,18 @@ def menupesan(): #faatih, jihan (odi buat csv)
 
 def menuawal(): #display awal (jihan)
     print("""
-    =================SELAMAT DATANG===================
-                      Roti Bakar 12
-    Jl Kebangkitan No. 38, Kec. Laweyan, Kota Surakarta
-                  Telp. (0271) 765331
-    ==================================================
-    1. Pesan
-    2. Cek Pesanan
-    3. Exit
-    ==================================================""")
+=================SELAMAT DATANG===================
+                  Roti Bakar 12
+Jl Kebangkitan No. 38, Kec. Laweyan, Kota Surakarta
+               Telp. (0271) 765331
+==================================================
+1. Pesan
+2. Cek Pesanan
+3. Exit
+==================================================""")
 
 def main(): #alur program (faatih)
     try:
-        global no
-        no = 0
         menuawal()
         pilihan = int(input(">> "))
         if pilihan == 1 :
@@ -287,8 +345,8 @@ def main(): #alur program (faatih)
         elif pilihan == 3 :
             menuexit()
         else :
-            menuawal()
-    except:
-        menuawal()
+            main()
+    except ValueError:
+        main()
 
 main()
