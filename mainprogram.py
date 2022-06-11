@@ -112,8 +112,8 @@ def timeygmana():
         readdata = csv.reader(filedata)
         listdata = list(readdata)
     try:
-        if listdata[len(listdata)-1][5]-timepesan < 0:
-            return len(listdata[len(listdata)-1][5])
+        if listdata[-1][5]-timepesan < 0:
+            return len(listdata[-1][5])
         else:
             return timepesan
     
