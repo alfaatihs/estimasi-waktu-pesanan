@@ -64,7 +64,7 @@ def generatenopesan():
     date = date.strftime("%Y%m%d")
 
     if date in listdata[-1][0]:
-        no = int(listdata[-1][0][-3])
+        no = int(listdata[-1][0][-3:])
     
     no = no + 1
     nopesan = date + str(no).zfill(3)
