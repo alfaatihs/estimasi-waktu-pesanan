@@ -64,7 +64,7 @@ def generatenopesan():
     date = date.strftime("%Y%m%d")
 
     if date in listdata[-1][0]:
-        no = int(listdata[-1][0][-1])
+        no = int(listdata[-1][0][-3])
     
     no = no + 1
     nopesan = date + str(no).zfill(3)
@@ -85,20 +85,20 @@ Pilih Kecamatan:
             
         kecamatan = int(input(">> "))
         if kecamatan == 1:
-            ongkir = 6000
-            lamakirim = dt.timedelta(minutes=10) #INI BRP MENIT Y KIRA2?
-        elif kecamatan ==2:
-            ongkir = 10000
-            lamakirim = dt.timedelta(minutes=10) #INI BRP MENIT Y KIRA2?
+            ongkir = 3000
+            lamakirim = dt.timedelta(minutes=5) 
+        elif kecamatan == 2:
+            ongkir = 5000
+            lamakirim = dt.timedelta(minutes=10) 
         elif kecamatan == 3:
-            ongkir = 8000
-            lamakirim = dt.timedelta(minutes=10) #INI BRP MENIT Y KIRA2?
+            ongkir = 10000
+            lamakirim = dt.timedelta(minutes=19) 
         elif kecamatan == 4:
             ongkir = 9000
-            lamakirim = dt.timedelta(minutes=10) #INI BRP MENIT Y KIRA2?
+            lamakirim = dt.timedelta(minutes=18) 
         elif kecamatan == 5:
             ongkir = 7000
-            lamakirim = dt.timedelta(minutes=10) #INI BRP MENIT Y KIRA2?
+            lamakirim = dt.timedelta(minutes=17) 
         else:
             print("Input tidak valid, silahkan coba lagi")
             kecamatan()
@@ -163,7 +163,7 @@ def waktu():
     global timepesan
 
     timepesan = dt.datetime.now()
-    lamabuat = dt.timedelta(minutes=5*modul.sumcolumn(listpesanan,2)) #WAKTU BUAT 1 ROTI BAKAR BRP???
+    lamabuat = dt.timedelta(minutes=4*modul.sumcolumn(listpesanan,2)) 
     timejadi = timeygmana() + lamabuat
     timesampai = timejadi + lamakirim
     datapesan.append(timepesan)
