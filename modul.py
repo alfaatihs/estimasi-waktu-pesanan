@@ -61,6 +61,7 @@ def sumcolumn(list,column):
     return total
 
 def listconversion(list,column,func):
+    #fungsi untuk memasang fungsi pada nilai dalam stu kolom pada suatu list
     for i in range (len(list)):
         list[i][column] = func(list[i][column])
     

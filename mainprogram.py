@@ -4,8 +4,9 @@ from tabulate import tabulate
 import datetime as dt
 import locale as lc
 import modul
+import ast
 
-lc.setlocale(lc.LC_TIME, 'IND')
+lc.setlocale(lc.LC_TIME, 'IND') #mengubah format tanggal ke indonesia
 no = 0
 
 def menucek(): #apang, odi
@@ -20,15 +21,27 @@ def menucek(): #apang, odi
         readdata = csv.reader(filedata)
         listdata = list(readdata)
 
+    #index merupakan tuple berisi index no pesanan dalam csv
     index = modul.nestedlistindex(listdata,nopesanan)
     print()
     print("Detail Pesanan:")
     print()
     print("No Pesanan: ", listdata[index[0]][0])
-    jamsampai = listdata[index[0]][6]
-    jamsampai = dt.datetime.strptime(jamsampai,'%Y-%m-%d %H:%M:%S.%f')
-    waktusampai = jamsampai - dt.datetime.now()
-    display = modul.strfdelta(waktusampai, '{H:2} Jam, {M:02} Menit')
+    print()
+    pesanan = ast.literal_eval(listdata[index[0]][7])
+    print(tabulate(pesanan,headers=["Pesanan","Jumlah","Harga"],tablefmt="pretty"))
+    print("Total Harga: ",modul.displayrupiah(float(listdata[index[0]][8])))
+    print("Ongkir: ",modul.displayrupiah(float(listdata[index[0]][9])))
+    print('Jumlah yang Harus dibayar: ',modul.displayrupiah(float(int(listdata[index[0]][8])+int(listdata[index[0]][9]))))
+    print()
+
+    jamsampai = listdata[index[0]][6] #memanggil jamsampai dari list
+    jamsampai = dt.datetime.strptime(jamsampai,'%Y-%m-%d %H:%M:%S.%f') #mengubah jam sampai dari string ke format waktu
+    waktusampai = jamsampai - dt.datetime.now() #menghitung waktu hingga pesanan tiba
+    if int(waktusampai.total_seconds()) < 0:
+        print("Pesanan Anda Seharusnya Sudah Sampai, Jika Belum Sampai Silahkan Hubungi Restoran")
+        print("==================================================================================")
+    display = modul.strfdelta(waktusampai, '{H:2} Jam, {M:02} Menit') #membuat format penampilan waktu
     print("Pesanan anda akan tiba dalam", display)
     print("===============================================")
 
@@ -59,10 +72,10 @@ def generatenopesan():
     with open ('data.csv','r') as filedata :
         readdata = csv.reader(filedata)
         listdata = list(readdata)
-    
+    #nopesan berupa tanggal dan no urut
     date = dt.date.today()
     date = date.strftime("%Y%m%d")
-
+    #jika ada pesanan di tanggal yang sama sebelumnnya no urut akan menyesuaikan
     if date in listdata[-1][0]:
         no = int(listdata[-1][0][-3:])
     
@@ -82,7 +95,7 @@ Pilih Kecamatan:
 3. Jebres
 4. Banjarsari
 5. Pasar Kliwon""")
-            
+
         kecamatan = int(input(">> "))
         if kecamatan == 1:
             ongkir = 3000
@@ -112,7 +125,11 @@ def timeygmana():
         readdata = csv.reader(filedata)
         listdata = list(readdata)
     try:
-        if listdata[-1][5]-timepesan < 0:
+        #menghitung selisih waktu pemesanan dengan waktu pesanan sebelumnya selesai dibuat
+        #untuk menentukan estimasi lama pembuatan
+        waktuantre = dt.datetime.strptime(listdata[-1][5],'%Y-%m-%d %H:%M:%S.%f')
+        selisih = waktuantre - timepesan
+        if int(selisih.total_seconds()) < 0:
             return len(listdata[-1][5])
         else:
             return timepesan
@@ -133,6 +150,7 @@ def receipt():
     print("Detail Pesanan:")
     print()
     print("No Pesanan: ", datapesan[0])
+    #strftime untuk format waktu
     print("Tanggal Pesan: ",timepesan.strftime("%A, %d %B %Y"))
     print("Jam Pesan: ", timepesan.strftime("%H:%M"))
     print()
@@ -153,6 +171,7 @@ def receipt():
         main()
 
 def writedatapesan():
+    #menambahkan list sementara ke csv
     with open ('data.csv','a',newline='') as filedata:
         writedata = csv.writer(filedata)
         writedata.writerow(datapesan)
@@ -162,13 +181,18 @@ def writedatapesan():
 def waktu():
     global timepesan
 
-    timepesan = dt.datetime.now()
+    timepesan = dt.datetime.now() #mencatat waktu sekarang
     lamabuat = dt.timedelta(minutes=4*modul.sumcolumn(listpesanan,2)) 
+    #lamabuat = waktu pembuatan satu roti bakar dikali jumlah rotibakar yang dipesan
+    #waktu pembuatan semua varian rotibakar = 4 menit
     timejadi = timeygmana() + lamabuat
     timesampai = timejadi + lamakirim
     datapesan.append(timepesan)
     datapesan.append(timejadi)
     datapesan.append(timesampai)
+    datapesan.append(listpesanan)
+    datapesan.append(totalharga)
+    datapesan.append(ongkir)
     writedatapesan()
 
 def inputdatadiri():
@@ -225,6 +249,7 @@ Apakah Pesanan Sudah Sesuai?
 def hitungkonfirmasi():
     global totalharga
     totalharga = modul.sumcolumn(listpesanan,3)
+    #sumcolumn inputnya kolom, listconversion inputnya index kolom
 
     modul.listconversion(listpesanan,2,float)
     modul.listconversion(listpesanan,2,modul.displayrupiah)
@@ -238,11 +263,15 @@ def inputmenupesan():
         if pilihan == 0:
             hitungkonfirmasi()
         elif pilihan in range (1,16):
+            #pilihan digunakan sebagai index
+            #index 0 = header
             listpilihan = []
+            #print menu dan harga
             print()
             print(displaymenu[pilihan][1])
             print(displaymenu[pilihan][2])
             jumlah = int(input("Jumlah: "))
+            #totalpilihan = total harga satu menu yang dipilih
             totalpilihan = float(listmenu[pilihan][2]*jumlah)
             print("Total harga: ",modul.displayrupiah(totalpilihan))
             listpilihan.append(listmenu[pilihan][1])
@@ -258,7 +287,7 @@ def inputmenupesan():
         print("Input tidak valid, silahkan coba lagi")
         inputmenupesan()
 
-def menupesan(): #faatih, jihan (odi buat csv)
+def menupesan():
     
     global displaymenu
     global listmenu
@@ -272,7 +301,11 @@ def menupesan(): #faatih, jihan (odi buat csv)
     with open ('Menu.csv','r') as filemenu: 
         readmenu = csv.reader(filemenu)
         displaymenu = list(readmenu)
-
+    
+    #konversi kolom ke-2 (harga) menjadi format yang dibutuhkan
+    #integer untuk keperluan perhitungan total harga
+    #float untuk input fungsi displayrupiah
+    #displayrupiah untuk menjadikan string yang rapi
     modul.listconversion(listmenu[1:],2,int)
     modul.listconversion(displaymenu[1:],2,float)
     modul.listconversion(displaymenu[1:],2,modul.displayrupiah)
@@ -283,10 +316,11 @@ def menupesan(): #faatih, jihan (odi buat csv)
     print(tabulate(displaymenu[1:],headers=displaymenu[0],tablefmt="pretty"))
     
     global listpesanan
+    #listpesanan di define disini supaya saat kembali ke menupesan listpesanan direset
     listpesanan = []
     inputmenupesan()    
 
-def menuawal(): #display awal (jihan)
+def menuawal():
     print("""
 =================SELAMAT DATANG===================
                   Roti Bakar 12
@@ -298,7 +332,7 @@ Jl Kebangkitan No. 38, Kec. Laweyan, Kota Surakarta
 3. Exit
 ==================================================""")
 
-def main(): #alur program (faatih)
+def main():
     try:
         menuawal()
         pilihan = int(input(">> "))
